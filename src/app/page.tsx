@@ -1,6 +1,7 @@
 import { Hero } from "@/components/sections/hero";
 import { Facilities } from "@/components/sections/facilities";
 import { FreeAndSunday } from "@/components/sections/free-and-sunday";
+import { Plans } from "@/components/sections/plans";
 
 export default function Home() {
   return (
@@ -8,11 +9,10 @@ export default function Home() {
       <Hero />
       <Facilities />
       <FreeAndSunday />
-      {["plans", "faq"].map((id) => (
-        <section key={id} id={id} className="py-24 text-center text-navy/40">
-          Section coming soon: {id}
-        </section>
-      ))}
+      <Plans />
+      <section id="faq" className="py-24 text-center text-navy/40">
+        Section coming soon: faq
+      </section>
     </>
   );
 }
