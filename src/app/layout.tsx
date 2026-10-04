@@ -4,6 +4,9 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { StickyContactBar } from "@/components/layout/sticky-contact-bar";
 import { site } from "@/content/site";
+import { JsonLd } from "@/components/shared/json-ld";
+import { localBusinessSchema } from "@/lib/seo";
+import { geo } from "@/content/site";
 import "./globals.css";
 
 const display = Bricolage_Grotesque({
@@ -38,6 +41,26 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
   authors: [{ name: "TekSquad" }],
   creator: "TekSquad",
+  keywords: [
+    "library in Shastri Nagar Jammu",
+    "study library Jammu",
+    "24 hour library Jammu",
+    "self study space Jammu",
+    "reading room Jammu",
+    "library near me Jammu",
+  ],
+  category: "education",
+  other: {
+    "geo.region": "IN-JK",
+    "geo.placename": "Shastri Nagar, Jammu",
+    ...(geo && {
+      "geo.position": `${geo.lat};${geo.lng}`,
+      ICBM: `${geo.lat}, ${geo.lng}`,
+    }),
+  },
+  verification: process.env.NEXT_PUBLIC_GSC_TOKEN
+    ? { google: process.env.NEXT_PUBLIC_GSC_TOKEN }
+    : undefined,
 };
 
 export const viewport: Viewport = {
@@ -54,6 +77,7 @@ export default function RootLayout({
   return (
     <html lang="en-IN" className={`${display.variable} ${body.variable}`}>
       <body className="font-sans antialiased">
+        <JsonLd data={localBusinessSchema()} />
         <Navbar />
         <main>{children}</main>
         <Footer />
