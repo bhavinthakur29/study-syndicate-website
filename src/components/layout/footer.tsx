@@ -17,7 +17,7 @@ export function Footer() {
             <Link
               href="/"
               aria-label={`${site.name} home`}
-              className="inline-block rounded-2xl bg-white p-3 shadow-lg"
+              className="inline-block rounded-2xl p-3 shadow-lg"
             >
               <Image
                 src="/footer-logo.png"
