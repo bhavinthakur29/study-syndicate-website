@@ -20,6 +20,10 @@ export const site = {
   hours: "Open 24 hours, every day",
   mapsUrl:
     "https://www.google.com/maps/search/?api=1&query=The+Study+Syndicate+Library+Shastri+Nagar+Jammu",
+  credit: {
+    name: "TekSquad",
+    url: "https://teksquad.tech/",
+  },
 } as const;
 
 export const navLinks = [

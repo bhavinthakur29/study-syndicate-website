@@ -100,9 +100,28 @@ export function Footer() {
           </address>
         </div>
 
-        <p className="mt-10 border-t border-white/10 pt-6 text-xs text-white/50">
-          © {new Date().getFullYear()} {site.name}. Shastri Nagar, Jammu.
-        </p>
+        <div className="mt-10 flex flex-col gap-2 border-t border-white/10 pt-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {new Date().getFullYear()} {site.name}. Shastri Nagar, Jammu.
+          </p>
+          <p>
+            Designed and developed by{" "}
+            {site.credit.url ? (
+              <a
+                href={site.credit.url}
+                target="_blank"
+                rel="noopener"
+                className="font-semibold text-gold hover:underline"
+              >
+                {site.credit.name}
+              </a>
+            ) : (
+              <span className="font-semibold text-gold">
+                {site.credit.name}
+              </span>
+            )}
+          </p>
+        </div>
       </Container>
     </footer>
   );

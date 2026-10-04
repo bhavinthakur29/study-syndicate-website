@@ -36,6 +36,8 @@ export const metadata: Metadata = {
     url: "/",
   },
   robots: { index: true, follow: true },
+  authors: [{ name: "TekSquad" }],
+  creator: "TekSquad",
 };
 
 export const viewport: Viewport = {
