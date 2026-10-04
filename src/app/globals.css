@@ -121,10 +121,42 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
     @apply font-sans;
+  }
+}
+
+@theme inline {
+  --color-navy: #14193f;
+  --color-navy-deep: #0d1030;
+  --color-gold: #e9a20c;
+  --color-gold-soft: #fff3d6;
+  --color-cabin: #c8231f;
+  --color-paper: #fbfaf6;
+  --font-display: var(--font-bricolage);
+  --font-sans: var(--font-dm-sans);
+}
+
+:root {
+  --background: #fbfaf6;
+  --foreground: #14193f;
+  --primary: #14193f;
+  --primary-foreground: #ffffff;
+  --ring: #e9a20c;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 88px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }
