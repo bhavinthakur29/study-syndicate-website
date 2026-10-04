@@ -7,6 +7,7 @@ import { site } from "@/content/site";
 import { JsonLd } from "@/components/shared/json-ld";
 import { localBusinessSchema } from "@/lib/seo";
 import { geo } from "@/content/site";
+import { ScrollToTop } from "@/components/layout/scroll-to-top";
 import "./globals.css";
 
 const display = Bricolage_Grotesque({
@@ -82,6 +83,7 @@ export default function RootLayout({
         <main>{children}</main>
         <Footer />
         <StickyContactBar />
+        <ScrollToTop />
       </body>
     </html>
   );
