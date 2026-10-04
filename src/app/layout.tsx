@@ -53,7 +53,7 @@ export default function RootLayout({
     <html lang="en-IN" className={`${display.variable} ${body.variable}`}>
       <body className="font-sans antialiased">
         <Navbar />
-        <main className="pt-20">{children}</main>
+        <main>{children}</main>
         <Footer />
         <StickyContactBar />
       </body>

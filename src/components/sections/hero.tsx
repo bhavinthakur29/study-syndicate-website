@@ -21,28 +21,19 @@ const chips = [
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-32 -top-32 size-[28rem] rounded-full bg-gold/25 blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -left-40 top-1/2 size-[24rem] rounded-full bg-navy/10 blur-3xl"
-      />
-
-      <Container className="relative grid items-center gap-12 py-10 md:py-16 lg:grid-cols-[1.1fr_0.9fr]">
+    <section className="hero-bg relative overflow-hidden rounded-b-[2.5rem] text-white">
+      <Container className="relative grid items-center gap-12 pb-20 pt-28 md:pt-32 lg:grid-cols-[1.1fr_0.9fr]">
         <div>
           <p
-            className="rise inline-flex items-center gap-2 rounded-full bg-gold-soft px-4 py-1.5 text-sm font-semibold text-navy"
+            className="rise inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-sm font-semibold text-white backdrop-blur"
             style={{ ["--i" as string]: 0 }}
           >
-            <span className="size-2 rounded-full bg-cabin" aria-hidden />
+            <span className="size-2 rounded-full bg-gold" aria-hidden />
             Premium 24-hour study library in Shastri Nagar, Jammu
           </p>
 
           <h1
-            className="rise mt-5 font-display text-5xl font-extrabold leading-[1.02] tracking-tight text-navy sm:text-6xl lg:text-7xl"
+            className="rise mt-5 font-display text-5xl font-extrabold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl"
             style={{ ["--i" as string]: 1 }}
           >
             A space to learn, a place to{" "}
@@ -50,7 +41,7 @@ export function Hero() {
           </h1>
 
           <p
-            className="rise mt-5 max-w-xl text-lg leading-relaxed text-navy/70"
+            className="rise mt-5 max-w-xl text-lg leading-relaxed text-white/70"
             style={{ ["--i" as string]: 2 }}
           >
             Personal numbered cabins, a silent AC hall, free mock tests and
@@ -68,14 +59,14 @@ export function Hero() {
               )}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl bg-navy px-6 py-3.5 font-bold text-white transition hover:bg-navy-deep"
+              className="inline-flex items-center gap-2 rounded-xl bg-gold px-6 py-3.5 font-bold text-navy transition hover:brightness-95"
             >
               <MessageCircle className="size-5" aria-hidden /> Reserve your
               cabin
             </a>
             <a
               href="#plans"
-              className="inline-flex items-center rounded-xl border-2 border-navy px-6 py-3.5 font-bold text-navy transition hover:bg-navy hover:text-white"
+              className="inline-flex items-center rounded-xl border-2 border-white/80 px-6 py-3.5 font-bold text-white transition hover:bg-white hover:text-navy"
             >
               See the offer
             </a>
@@ -88,7 +79,7 @@ export function Hero() {
             {chips.map(({ icon: Icon, label }) => (
               <li
                 key={label}
-                className="flex items-center gap-2 text-sm font-medium text-navy/80"
+                className="flex items-center gap-2 text-sm font-medium text-white/80"
               >
                 <Icon className="size-4 text-gold" aria-hidden /> {label}
               </li>
@@ -100,7 +91,7 @@ export function Hero() {
           className="rise relative mx-auto w-full max-w-md lg:max-w-none"
           style={{ ["--i" as string]: 2 }}
         >
-          <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] border-4 border-navy shadow-2xl">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] border-4 border-white/15 shadow-2xl shadow-black/40">
             <Image
               src="/images/cabins.jpeg"
               alt="Rows of numbered red study cabins with lamps inside The Study Syndicate Library"
@@ -111,23 +102,23 @@ export function Hero() {
             />
           </div>
 
-          <div className="absolute -left-3 top-8 rounded-2xl bg-navy p-4 text-white shadow-xl sm:-left-8">
-            <p className="text-xs font-medium text-white/70">{offer.label}</p>
-            <p className="font-display text-4xl font-extrabold leading-none text-gold">
+          <div className="absolute -left-3 top-8 rounded-2xl bg-gold p-4 text-navy shadow-xl sm:-left-8">
+            <p className="text-xs font-semibold text-navy/70">{offer.label}</p>
+            <p className="font-display text-4xl font-extrabold leading-none">
               {rupees(offer.price)}
             </p>
-            <p className="mt-1 text-xs text-white/80">
+            <p className="mt-1 text-xs font-medium text-navy/80">
               {offer.period}, <s>{rupees(offer.regularPrice)}</s>/month
             </p>
           </div>
 
-          <div className="absolute -bottom-5 right-2 flex max-w-[15rem] items-start gap-3 rounded-2xl bg-white p-4 shadow-xl sm:-right-6">
+          <div className="absolute -bottom-5 right-2 flex max-w-[15rem] items-start gap-3 rounded-2xl bg-white p-4 text-navy shadow-xl sm:-right-6">
             <CalendarClock
               className="mt-0.5 size-6 shrink-0 text-cabin"
               aria-hidden
             />
             <div>
-              <p className="text-sm font-bold text-navy">
+              <p className="text-sm font-bold">
                 {sundaySessions.day} doubt sessions
               </p>
               <p className="text-xs text-navy/70">

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { Menu, Phone, X } from "lucide-react";
@@ -12,12 +13,23 @@ export function Navbar() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 pt-3">
       <Container>
-        <div className="flex h-14 items-center justify-between rounded-2xl border border-navy/10 bg-white/80 px-4 shadow-sm backdrop-blur-md">
+        <div className="flex h-14 items-center justify-between rounded-2xl border border-white/15 bg-navy-deep/70 px-3 shadow-lg shadow-black/20 backdrop-blur-xl">
           <Link
             href="/"
-            className="font-display text-lg font-extrabold tracking-tight text-navy"
+            className="flex items-center gap-2.5"
+            aria-label={`${site.name} home`}
           >
-            The Study <span className="text-gold">Syndicate</span>
+            <Image
+              src="/site-logo.svg"
+              alt=""
+              width={40}
+              height={40}
+              priority
+              className="size-10 rounded-xl hidden min-[480px]:inline"
+            />
+            <span className="font-display text-lg font-extrabold leading-none tracking-tight text-white">
+              The Study <span className="text-gold">Syndicate</span>
+            </span>
           </Link>
 
           <nav aria-label="Main" className="hidden items-center gap-6 md:flex">
@@ -25,7 +37,7 @@ export function Navbar() {
               <Link
                 key={l.href}
                 href={l.href}
-                className="text-sm font-medium text-navy/70 transition-colors hover:text-navy"
+                className="text-sm font-medium text-white/70 transition-colors hover:text-white"
               >
                 {l.label}
               </Link>
@@ -44,7 +56,7 @@ export function Navbar() {
               aria-label={open ? "Close menu" : "Open menu"}
               aria-expanded={open}
               onClick={() => setOpen((v) => !v)}
-              className="grid size-10 place-items-center rounded-xl text-navy md:hidden"
+              className="grid size-10 place-items-center rounded-xl text-white md:hidden"
             >
               {open ? <X className="size-5" /> : <Menu className="size-5" />}
             </button>
@@ -54,14 +66,14 @@ export function Navbar() {
         {open && (
           <nav
             aria-label="Mobile"
-            className="mt-2 rounded-2xl border border-navy/10 bg-white p-3 shadow-lg md:hidden"
+            className="mt-2 rounded-2xl border border-white/15 bg-navy-deep/95 p-3 shadow-xl backdrop-blur-xl md:hidden"
           >
             {navLinks.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="block rounded-xl px-4 py-3 font-medium text-navy hover:bg-gold-soft"
+                className="block rounded-xl px-4 py-3 font-medium text-white hover:bg-white/10"
               >
                 {l.label}
               </Link>

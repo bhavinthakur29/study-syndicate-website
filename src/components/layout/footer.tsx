@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Clock, MapPin, Phone } from "lucide-react";
 import { Container } from "@/components/shared/container";
 import { navLinks, site, whatsappLink } from "@/content/site";
+import Image from "next/image";
 
 export function Footer() {
   const a = site.address;
@@ -13,10 +14,20 @@ export function Footer() {
       <Container>
         <div className="grid gap-10 md:grid-cols-3">
           <div>
-            <p className="font-display text-xl font-extrabold text-white">
-              The Study <span className="text-gold">Syndicate</span>
-            </p>
-            <p className="mt-3 max-w-xs text-sm leading-relaxed">
+            <Link
+              href="/"
+              aria-label={`${site.name} home`}
+              className="inline-block rounded-2xl bg-white p-3 shadow-lg"
+            >
+              <Image
+                src="/footer-logo.png"
+                alt={site.name}
+                width={666}
+                height={275}
+                className="h-auto w-48 sm:w-56"
+              />
+            </Link>
+            <p className="mt-4 max-w-xs text-sm leading-relaxed">
               {site.description}
             </p>
           </div>
