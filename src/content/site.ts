@@ -20,6 +20,13 @@ export const site = {
   hours: "Open 24 hours, every day",
   mapsUrl:
     "https://www.google.com/maps/search/?api=1&query=The+Study+Syndicate+Library+Shastri+Nagar+Jammu",
+  landmarks: [
+    "Above Choudhary Car Accessories",
+    "Near Jandyal Bakers",
+    "Shastri Nagar",
+  ],
+  mapEmbedUrl:
+    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d17383.751002564186!2d74.84737157236543!3d32.69063887919534!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x391e85003155e97b%3A0xb0d08e2d1c0fbca5!2sThe%20Study%20Syndicate%20Library!5e1!3m2!1sen!2suk!4v1791089689520!5m2!1sen!2suk",
   credit: {
     name: "TekSquad",
     url: "https://teksquad.tech/",
