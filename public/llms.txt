@@ -1,0 +1,23 @@
+# The Study Syndicate Library
+
+> Premium 24-hour air-conditioned study library in Shastri Nagar, Jammu (180004), with personal numbered cabins, high-speed Wi-Fi, free mock tests and notes, and Sunday doubt sessions.
+
+The Study Syndicate Library is a self-study space for students preparing for competitive exams. It is open 24 hours a day, every day. Reservations and enquiries happen by phone or WhatsApp.
+
+## Key facts
+
+- Address: Above Choudhary Car Accessories, Digiana, Shastri Nagar, Jammu, Jammu and Kashmir 180004 (near Jandyal Bakers)
+- Phone and WhatsApp: +91 90550 66867
+- Hours: open 24 hours, every day
+- Opening offer: ₹999 for the first month, instead of ₹1,200 a month (limited time)
+- Facilities: personal numbered cabins with lamps and power points, fully AC silent hall, high-speed Wi-Fi, CCTV, RO water, refreshment zone, books and study resources
+- Free for members: mock tests (Maths, Reasoning, English, GS) conducted and checked, study notes, career counselling
+- Sunday doubt sessions: every Sunday, 5 PM to 9 PM, covering Maths, Reasoning, English, GS and general competitive exam guidance
+
+## Pages
+
+- [Home](https://thestudysyndicate.tekbiz.dev/): facilities, free extras, plans, location and FAQ on one page
+
+## Elsewhere
+
+- [Instagram](https://www.instagram.com/thestudysyndicate): updates and offers
