@@ -73,10 +73,10 @@ export function Navbar() {
             <Image
               src="/site-logo.svg"
               alt=""
-              width={40}
-              height={40}
+              width={256}
+              height={256}
               priority
-              className="size-10 rounded-xl"
+              className="h-10 w-auto"
             />
             <span className="font-display text-lg font-extrabold leading-none tracking-tight text-white">
               The Study <span className="text-gold">Syndicate</span>

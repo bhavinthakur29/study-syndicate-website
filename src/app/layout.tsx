@@ -8,6 +8,8 @@ import { JsonLd } from "@/components/shared/json-ld";
 import { localBusinessSchema } from "@/lib/seo";
 import { geo } from "@/content/site";
 import { ScrollToTop } from "@/components/layout/scroll-to-top";
+import { Analytics } from "@/components/shared/analytics";
+import { ContactTracker } from "@/components/shared/contact-tracker";
 import "./globals.css";
 
 const display = Bricolage_Grotesque({
@@ -84,6 +86,8 @@ export default function RootLayout({
         <Footer />
         <StickyContactBar />
         <ScrollToTop />
+        <Analytics />
+        <ContactTracker />
       </body>
     </html>
   );
