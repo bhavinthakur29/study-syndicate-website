@@ -1,13 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
-import { Navbar } from "@/components/layout/navbar";
-import { Footer } from "@/components/layout/footer";
-import { StickyContactBar } from "@/components/layout/sticky-contact-bar";
 import { site } from "@/content/site";
 import { JsonLd } from "@/components/shared/json-ld";
 import { localBusinessSchema } from "@/lib/seo";
 import { geo } from "@/content/site";
-import { ScrollToTop } from "@/components/layout/scroll-to-top";
 import { Analytics } from "@/components/shared/analytics";
 import { ContactTracker } from "@/components/shared/contact-tracker";
 import "./globals.css";
@@ -81,11 +77,7 @@ export default function RootLayout({
     <html lang="en-IN" className={`${display.variable} ${body.variable}`}>
       <body className="font-sans antialiased">
         <JsonLd data={localBusinessSchema()} />
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
-        <StickyContactBar />
-        <ScrollToTop />
+        {children}
         <Analytics />
         <ContactTracker />
       </body>
