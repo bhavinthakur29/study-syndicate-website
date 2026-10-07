@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AdminConvexProvider } from "./convex-provider";
+import { AdminShell } from "./admin-shell";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -18,7 +19,7 @@ export default function AdminLayout({
   return (
     <ClerkProvider>
       <AdminConvexProvider>
-        <div className="min-h-screen bg-paper p-5 md:p-8">{children}</div>
+        <AdminShell>{children}</AdminShell>
       </AdminConvexProvider>
     </ClerkProvider>
   );

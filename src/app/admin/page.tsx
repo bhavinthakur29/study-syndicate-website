@@ -50,26 +50,14 @@ function Gate() {
 
 export default function AdminHome() {
   return (
-    <>
-      <AuthLoading>
-        <p className="text-navy/70">Loading…</p>
-      </AuthLoading>
-      <Unauthenticated>
-        <div className="max-w-md rounded-2xl border border-navy/10 bg-white p-6">
-          <h1 className="font-display text-2xl font-extrabold text-navy">
-            Staff sign-in
-          </h1>
-          <p className="mt-2 text-navy/70">Sign in with your Google account.</p>
-          <SignInButton mode="modal">
-            <button className="mt-4 rounded-xl bg-gold px-5 py-3 font-bold text-navy">
-              Sign in with Google
-            </button>
-          </SignInButton>
-        </div>
-      </Unauthenticated>
-      <Authenticated>
-        <Gate />
-      </Authenticated>
-    </>
+    <div>
+      <h1 className="font-display text-3xl font-extrabold text-navy">
+        Dashboard
+      </h1>
+      <p className="mt-2 text-navy/70">
+        Members are ready. Memberships, payments and the dashboard numbers
+        arrive in the next steps.
+      </p>
+    </div>
   );
 }
