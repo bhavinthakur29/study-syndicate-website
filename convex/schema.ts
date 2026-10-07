@@ -70,4 +70,9 @@ export default defineSchema({
     summary: v.string(),
     at: v.number(),
   }).index("by_time", ["at"]),
+
+  counters: defineTable({
+    name: v.string(),
+    value: v.number(),
+  }).index("by_name", ["name"]),
 });

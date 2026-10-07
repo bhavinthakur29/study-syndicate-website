@@ -14,6 +14,7 @@ import { SignInButton, SignOutButton, UserButton } from "@clerk/nextjs";
 import {
   DoorOpen,
   ExternalLink,
+  IndianRupee,
   LayoutDashboard,
   Menu,
   Users,
@@ -28,6 +29,7 @@ const nav: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/members", label: "Members", icon: Users },
   { href: "/admin/memberships", label: "Memberships", icon: DoorOpen },
+  { href: "/admin/payments", label: "Payments", icon: IndianRupee },
 ];
 
 type Me = { name: string; email: string; role: string };

@@ -8,6 +8,7 @@ import {
 import { requireAdmin } from "./lib/auth";
 import { logAudit } from "./lib/audit";
 import { DAY, addMonthsIST } from "./lib/dates";
+import { paidFor } from "./lib/payments";
 
 async function freeCabin(ctx: MutationCtx, number: number) {
   const cabin = await ctx.db
@@ -45,10 +46,15 @@ export const listActive = query({
       .withIndex("by_status_end", (q) => q.eq("status", "active"))
       .take(200);
     return Promise.all(
-      rows.map(async (r) => ({
-        ...r,
-        memberName: (await ctx.db.get(r.memberId))?.name ?? "Unknown",
-      })),
+      rows.map(async (r) => {
+        const paid = await paidFor(ctx, r._id, r.memberId);
+        return {
+          ...r,
+          memberName: (await ctx.db.get(r.memberId))?.name ?? "Unknown",
+          paid,
+          balance: r.amountDue - paid,
+        };
+      }),
     );
   },
 });
