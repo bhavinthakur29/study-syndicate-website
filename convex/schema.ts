@@ -60,7 +60,9 @@ export default defineSchema({
     recordedBy: v.string(),
     status: v.union(v.literal("received"), v.literal("void")),
     voidReason: v.optional(v.string()),
-  }).index("by_member", ["memberId"]),
+  })
+    .index("by_member", ["memberId"])
+    .index("by_received", ["receivedAt"]),
 
   auditLogs: defineTable({
     actor: v.string(),

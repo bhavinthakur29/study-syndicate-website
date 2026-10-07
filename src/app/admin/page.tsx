@@ -1,63 +1,131 @@
 "use client";
 
-import {
-  AuthLoading,
-  Authenticated,
-  Unauthenticated,
-  useQuery,
-} from "convex/react";
-import { SignInButton, SignOutButton, UserButton } from "@clerk/nextjs";
+import Link from "next/link";
+import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { DAY, formatDate } from "../../../convex/lib/dates";
+import { Card, PageHeader } from "@/components/admin/ui";
 
-function Gate() {
-  const me = useQuery(api.staff.me);
+const rupees = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
-  if (me === undefined) return <p className="text-navy/70">Checking access…</p>;
+function left(endDate: number) {
+  const d = Math.ceil((endDate - Date.now()) / DAY);
+  if (d < 0) return `Ended ${-d} day(s) ago`;
+  if (d === 0) return "Ends today";
+  return `${d} day(s) left`;
+}
 
-  if (me === null) {
+const quick =
+  "rounded-xl border border-navy/20 bg-white px-4 py-2.5 text-sm font-bold text-navy";
+
+export default function AdminHome() {
+  const s = useQuery(api.dashboard.summary);
+
+  if (s === undefined) {
     return (
-      <div className="max-w-md rounded-2xl border border-navy/10 bg-white p-6">
-        <h1 className="font-display text-2xl font-extrabold text-navy">
-          Not authorised
-        </h1>
-        <p className="mt-2 text-navy/70">
-          This account doesn't have access to the admin area.
-        </p>
-        <SignOutButton>
-          <button className="mt-4 rounded-xl bg-navy px-5 py-3 font-bold text-white">
-            Sign out
-          </button>
-        </SignOutButton>
+      <div>
+        <PageHeader title="Dashboard" />
+        <p className="mt-6 text-navy/70">Loading…</p>
       </div>
     );
   }
 
-  return (
-    <div className="flex items-center justify-between">
-      <div>
-        <h1 className="font-display text-3xl font-extrabold text-navy">
-          Admin
-        </h1>
-        <p className="mt-1 text-navy/70">
-          Signed in as {me.name} ({me.role}). The dashboard arrives in the next
-          steps.
-        </p>
-      </div>
-      <UserButton />
-    </div>
-  );
-}
+  const stats = [
+    { label: "Collected today", value: rupees(s.collected.today) },
+    { label: "Collected this month", value: rupees(s.collected.month) },
+    {
+      label: "Outstanding dues",
+      value: rupees(s.dues.total),
+      note: `${s.dues.count} member(s)`,
+    },
+    {
+      label: "Cabins available",
+      value: `${s.cabins.available}`,
+      note: `of ${s.cabins.total}`,
+    },
+    {
+      label: "Active memberships",
+      value: `${s.activeMemberships}`,
+      note: `${s.activeMembers} active members`,
+    },
+    { label: "Ending within 7 days", value: `${s.expiring.length}` },
+  ];
 
-export default function AdminHome() {
   return (
     <div>
-      <h1 className="font-display text-3xl font-extrabold text-navy">
-        Dashboard
-      </h1>
-      <p className="mt-2 text-navy/70">
-        Members are ready. Memberships, payments and the dashboard numbers
-        arrive in the next steps.
-      </p>
+      <PageHeader title="Dashboard" />
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Link href="/admin/members" className={quick}>
+          Add member
+        </Link>
+        <Link href="/admin/memberships" className={quick}>
+          Assign cabin
+        </Link>
+        <Link href="/admin/payments" className={quick}>
+          Record payment
+        </Link>
+      </div>
+
+      <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3">
+        {stats.map((x) => (
+          <Card key={x.label}>
+            <p className="font-display text-2xl font-extrabold text-navy md:text-3xl">
+              {x.value}
+            </p>
+            <p className="text-sm text-navy/70">{x.label}</p>
+            {x.note && <p className="text-xs text-navy/50">{x.note}</p>}
+          </Card>
+        ))}
+      </div>
+
+      <h2 className="mt-10 font-display text-xl font-extrabold text-navy">
+        Ending soon
+      </h2>
+      <ul className="mt-4 space-y-3">
+        {s.expiring.length === 0 && (
+          <li className="text-navy/70">Nothing ends in the next 7 days.</li>
+        )}
+        {s.expiring.map((m) => (
+          <li key={m.id}>
+            <Link href="/admin/memberships">
+              <Card className="flex flex-wrap items-center justify-between gap-2">
+                <p className="font-display text-lg font-extrabold text-navy">
+                  {m.memberName}{" "}
+                  <span className="text-cabin">· Cabin {m.cabinNumber}</span>
+                </p>
+                <p className="text-sm font-bold text-cabin">
+                  {left(m.endDate)} · {formatDate(m.endDate)}
+                </p>
+              </Card>
+            </Link>
+          </li>
+        ))}
+      </ul>
+
+      <h2 className="mt-10 font-display text-xl font-extrabold text-navy">
+        Biggest dues
+      </h2>
+      <ul className="mt-4 space-y-3">
+        {s.dues.top.length === 0 && (
+          <li className="text-navy/70">No outstanding dues.</li>
+        )}
+        {s.dues.top.map((m) => (
+          <li key={m.id}>
+            <Link href="/admin/payments">
+              <Card className="flex flex-wrap items-center justify-between gap-2">
+                <p className="font-display text-lg font-extrabold text-navy">
+                  {m.memberName}{" "}
+                  <span className="text-cabin">· Cabin {m.cabinNumber}</span>
+                </p>
+                <p className="text-sm font-bold text-navy">
+                  {rupees(m.balance)} due
+                </p>
+              </Card>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

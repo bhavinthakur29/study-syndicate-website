@@ -10,6 +10,7 @@
 
 import type * as cabins from "../cabins.js";
 import type * as crons from "../crons.js";
+import type * as dashboard from "../dashboard.js";
 import type * as lib_audit from "../lib/audit.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_dates from "../lib/dates.js";
@@ -31,6 +32,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   cabins: typeof cabins;
   crons: typeof crons;
+  dashboard: typeof dashboard;
   "lib/audit": typeof lib_audit;
   "lib/auth": typeof lib_auth;
   "lib/dates": typeof lib_dates;

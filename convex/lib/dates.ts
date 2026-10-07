@@ -27,3 +27,13 @@ export function addMonthsIST(ts: number, months: number) {
   d.setUTCDate(Math.min(day, last));
   return d.getTime() - IST;
 }
+
+export function dayStartIST(ts: number) {
+  const d = new Date(ts + IST);
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - IST;
+}
+
+export function monthStartIST(ts: number) {
+  const d = new Date(ts + IST);
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1) - IST;
+}
