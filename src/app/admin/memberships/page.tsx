@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ConvexError } from "convex/values";
+import { Field, errorText, input } from "@/components/admin/ui";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -25,9 +25,6 @@ type Form = {
 };
 type Ext = { id: Id<"memberships">; months: string; amount: string };
 
-const input =
-  "w-full rounded-xl border border-navy/20 bg-white px-4 py-3 text-navy outline-none focus:border-gold";
-
 function newForm(): Form {
   const start = toDateInput(Date.now());
   return {
@@ -38,27 +35,6 @@ function newForm(): Form {
     start,
     end: toDateInput(addMonthsIST(startOfDayIST(start), 1) - 1),
   };
-}
-
-function errorText(e: unknown) {
-  return e instanceof ConvexError && typeof e.data === "string"
-    ? e.data
-    : "Something went wrong. Please try again.";
-}
-
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block text-sm font-semibold text-navy">
-      {label}
-      <div className="mt-1 font-normal">{children}</div>
-    </label>
-  );
 }
 
 export default function MembershipsPage() {
