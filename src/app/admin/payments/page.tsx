@@ -129,10 +129,11 @@ export default function PaymentsPage() {
   return (
     <div>
       <PageHeader
-        title="Payments"
+        title="Fees"
+        intro="Use this page when a student pays a balance later, or to fix a mistake. New admissions and renewals record their own fee."
         action={
           <Button variant="gold" onClick={() => openForm()}>
-            Record payment
+            Fee received
           </Button>
         }
       />

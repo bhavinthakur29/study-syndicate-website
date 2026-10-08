@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Field, attempt, input } from "@/components/admin/ui";
+import { Field, PageHeader, attempt, input } from "@/components/admin/ui";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import type { Doc, Id } from "../../../../convex/_generated/dataModel";
@@ -104,21 +104,22 @@ export default function MembersPage() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-3xl font-extrabold text-navy">
-          Members
-        </h1>
-        <button
-          onClick={() => {
-            setEditId(null);
-            setError("");
-            setForm({ ...empty });
-          }}
-          className="rounded-xl bg-gold px-5 py-3 font-bold text-navy"
-        >
-          Add member
-        </button>
-      </div>
+      <PageHeader
+        title="Students"
+        intro="Everyone who has ever joined. For a new admission use 'New admission'. Add a student here only if they are not taking a cabin yet."
+        action={
+          <button
+            onClick={() => {
+              setEditId(null);
+              setError("");
+              setForm({ ...empty });
+            }}
+            className="rounded-xl bg-gold px-5 py-3 font-bold text-navy"
+          >
+            Add student
+          </button>
+        }
+      />
 
       {form && (
         <div className="mt-6 rounded-2xl border-2 border-gold bg-white p-5 md:p-6">

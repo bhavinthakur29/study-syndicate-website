@@ -5,7 +5,7 @@ import { logAudit } from "./lib/audit";
 import { email, phone, text } from "./lib/validate";
 import { safe } from "./lib/result";
 
-const memberFields = {
+export const memberFields = {
   name: v.string(),
   phone: v.string(),
   email: v.optional(v.string()),
@@ -27,7 +27,7 @@ type Input = {
   notes?: string;
 };
 
-function sanitize(a: Input) {
+export function sanitize(a: Input) {
   const guardianName = a.isMinor
     ? text(a.guardianName, "Guardian name", 80, true)
     : undefined;

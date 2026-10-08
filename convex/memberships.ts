@@ -20,13 +20,13 @@ async function freeCabin(ctx: MutationCtx, number: number) {
     await ctx.db.patch(cabin._id, { status: "available" });
 }
 
-function checkAmount(n: number) {
+export function checkAmount(n: number) {
   if (!Number.isInteger(n) || n < 0 || n > 100000) {
     throw new ConvexError("Amount must be a whole number of rupees");
   }
 }
 
-function checkDates(start: number, end: number) {
+export function checkDates(start: number, end: number) {
   if (!Number.isFinite(start) || !Number.isFinite(end))
     throw new ConvexError("Invalid dates");
   if (end <= start)

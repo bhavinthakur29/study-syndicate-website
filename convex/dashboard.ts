@@ -34,6 +34,7 @@ export const summary = query({
         return {
           id: m._id,
           memberName: member?.name ?? "Unknown",
+          phone: member?.phone ?? "",
           cabinNumber: m.cabinNumber,
           endDate: m.endDate,
           balance: m.amountDue - paid,

@@ -5,6 +5,7 @@ import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { DAY, formatDate } from "../../../convex/lib/dates";
 import { Card, PageHeader } from "@/components/admin/ui";
+import { studentWhatsApp } from "@/components/admin/whatsapp";
 
 const rupees = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
@@ -65,6 +66,9 @@ export default function AdminHome() {
         <Link href="/admin/payments" className={quick}>
           Record payment
         </Link>
+        <Link href="/admin/admit" className={`${quick} bg-gold`}>
+          New admission
+        </Link>
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3">
@@ -88,8 +92,8 @@ export default function AdminHome() {
         )}
         {s.expiring.map((m) => (
           <li key={m.id}>
-            <Link href="/admin/memberships">
-              <Card className="flex flex-wrap items-center justify-between gap-2">
+            <Card className="flex flex-wrap items-center justify-between gap-3">
+              <div>
                 <p className="font-display text-lg font-extrabold text-navy">
                   {m.memberName}{" "}
                   <span className="text-cabin">· Cabin {m.cabinNumber}</span>
@@ -97,8 +101,19 @@ export default function AdminHome() {
                 <p className="text-sm font-bold text-cabin">
                   {left(m.endDate)} · {formatDate(m.endDate)}
                 </p>
-              </Card>
-            </Link>
+              </div>
+              <a
+                className={quick}
+                target="_blank"
+                rel="noopener noreferrer"
+                href={studentWhatsApp(
+                  m.phone,
+                  `Hello ${m.memberName}, your cabin booking at The Study Syndicate Library ends on ${formatDate(m.endDate)}. Please renew to keep Cabin ${m.cabinNumber}. Thank you!`,
+                )}
+              >
+                Send reminder
+              </a>
+            </Card>
           </li>
         ))}
       </ul>
@@ -112,8 +127,8 @@ export default function AdminHome() {
         )}
         {s.dues.top.map((m) => (
           <li key={m.id}>
-            <Link href="/admin/payments">
-              <Card className="flex flex-wrap items-center justify-between gap-2">
+            <Card className="flex flex-wrap items-center justify-between gap-3">
+              <div>
                 <p className="font-display text-lg font-extrabold text-navy">
                   {m.memberName}{" "}
                   <span className="text-cabin">· Cabin {m.cabinNumber}</span>
@@ -121,8 +136,19 @@ export default function AdminHome() {
                 <p className="text-sm font-bold text-navy">
                   {rupees(m.balance)} due
                 </p>
-              </Card>
-            </Link>
+              </div>
+              <a
+                className={quick}
+                target="_blank"
+                rel="noopener noreferrer"
+                href={studentWhatsApp(
+                  m.phone,
+                  `Hello ${m.memberName}, a fee of ₹${m.balance} is pending for your cabin at The Study Syndicate Library. Please pay when convenient. Thank you!`,
+                )}
+              >
+                Send reminder
+              </a>
+            </Card>
           </li>
         ))}
       </ul>

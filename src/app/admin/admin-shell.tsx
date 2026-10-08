@@ -15,10 +15,12 @@ import {
   DoorOpen,
   Download,
   ExternalLink,
+  HelpCircle,
   IndianRupee,
   LayoutDashboard,
   Menu,
   ScrollText,
+  UserPlus,
   Users,
   X,
   type LucideIcon,
@@ -27,15 +29,16 @@ import { api } from "../../../convex/_generated/api";
 import { cn } from "@/lib/utils";
 
 // Add a line here whenever a new admin page is built.
-const nav: { href: string; label: string; icon: LucideIcon }[] = [
+const nav = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/admit", label: "New admission", icon: UserPlus },
+  { href: "/admin/memberships", label: "Cabin bookings", icon: DoorOpen },
+  { href: "/admin/payments", label: "Fees", icon: IndianRupee },
   { href: "/admin/members", label: "Members", icon: Users },
-  { href: "/admin/memberships", label: "Memberships", icon: DoorOpen },
-  { href: "/admin/payments", label: "Payments", icon: IndianRupee },
   { href: "/admin/audit", label: "Audit log", icon: ScrollText },
   { href: "/admin/backup", label: "Backup", icon: Download },
+  { href: "/admin/help", label: "How it works", icon: HelpCircle },
 ];
-
 type Me = { name: string; email: string; role: string };
 
 function SidebarContent({

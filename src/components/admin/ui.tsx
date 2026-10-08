@@ -14,16 +14,45 @@ export function errorText(e: unknown) {
 
 export function Field({
   label,
+  hint,
   children,
 }: {
   label: string;
+  hint?: string;
   children: ReactNode;
 }) {
   return (
     <label className="block text-sm font-semibold text-navy">
       {label}
       <div className="mt-1 font-normal">{children}</div>
+      {hint && (
+        <span className="mt-1 block text-xs font-normal text-navy/60">
+          {hint}
+        </span>
+      )}
     </label>
+  );
+}
+
+export function PageHeader({
+  title,
+  intro,
+  action,
+}: {
+  title: string;
+  intro?: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-3xl font-extrabold text-navy">
+          {title}
+        </h1>
+        {action}
+      </div>
+      {intro && <p className="mt-2 max-w-2xl text-navy/70">{intro}</p>}
+    </div>
   );
 }
 
@@ -70,23 +99,6 @@ export function Alert({ children }: { children: ReactNode }) {
     <p role="alert" className="font-semibold text-cabin">
       {children}
     </p>
-  );
-}
-
-export function PageHeader({
-  title,
-  action,
-}: {
-  title: string;
-  action?: ReactNode;
-}) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <h1 className="font-display text-3xl font-extrabold text-navy">
-        {title}
-      </h1>
-      {action}
-    </div>
   );
 }
 
