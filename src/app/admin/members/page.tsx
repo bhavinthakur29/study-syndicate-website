@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Field, errorText, input } from "@/components/admin/ui";
+import { Field, attempt, input } from "@/components/admin/ui";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import type { Doc, Id } from "../../../../convex/_generated/dataModel";
@@ -81,28 +81,25 @@ export default function MembersPage() {
       guardianPhone: form.guardianPhone || undefined,
       notes: form.notes || undefined,
     };
-    try {
-      if (editId) await update({ id: editId, ...payload });
-      else await create(payload);
+    const r = editId
+      ? await attempt(update({ id: editId, ...payload }), setError)
+      : await attempt(create(payload), setError);
+    setBusy(false);
+    if (r) {
       setForm(null);
       setEditId(null);
-    } catch (e) {
-      setError(errorText(e));
-    } finally {
-      setBusy(false);
     }
   }
 
   async function toggle(m: Doc<"members">) {
     setError("");
-    try {
-      await setMemberStatus({
+    await attempt(
+      setMemberStatus({
         id: m._id,
         status: m.status === "active" ? "inactive" : "active",
-      });
-    } catch (e) {
-      setError(errorText(e));
-    }
+      }),
+      setError,
+    );
   }
 
   return (
@@ -294,7 +291,13 @@ export default function MembersPage() {
               </button>
               <button
                 onClick={() => toggle(m)}
-                className="rounded-lg border border-navy/20 px-4 py-2 text-sm font-semibold text-navy"
+                disabled={m.status === "active" && m.hasActiveMembership}
+                title={
+                  m.status === "active" && m.hasActiveMembership
+                    ? "End their membership first"
+                    : undefined
+                }
+                className="rounded-lg border border-navy/20 px-4 py-2 text-sm font-semibold text-navy disabled:opacity-40"
               >
                 {m.status === "active" ? "Deactivate" : "Reactivate"}
               </button>

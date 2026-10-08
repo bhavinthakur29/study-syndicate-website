@@ -9,6 +9,7 @@ import { requireAdmin } from "./lib/auth";
 import { logAudit } from "./lib/audit";
 import { DAY, addMonthsIST } from "./lib/dates";
 import { paidFor } from "./lib/payments";
+import { safe } from "./lib/result";
 
 async function freeCabin(ctx: MutationCtx, number: number) {
   const cabin = await ctx.db
@@ -68,98 +69,101 @@ export const assign = mutation({
     startDate: v.number(),
     endDate: v.number(),
   },
-  handler: async (ctx, a) => {
-    const admin = await requireAdmin(ctx);
-    checkAmount(a.amountDue);
-    checkDates(a.startDate, a.endDate);
+  handler: async (ctx, a) =>
+    safe(async () => {
+      const admin = await requireAdmin(ctx);
+      checkAmount(a.amountDue);
+      checkDates(a.startDate, a.endDate);
 
-    const member = await ctx.db.get(a.memberId);
-    if (!member || member.status !== "active")
-      throw new ConvexError("Member not found or inactive");
+      const member = await ctx.db.get(a.memberId);
+      if (!member || member.status !== "active")
+        throw new ConvexError("Member not found or inactive");
 
-    const existing = await ctx.db
-      .query("memberships")
-      .withIndex("by_member", (q) => q.eq("memberId", a.memberId))
-      .collect();
-    if (existing.some((m) => m.status === "active")) {
-      throw new ConvexError("This member already has an active membership");
-    }
+      const existing = await ctx.db
+        .query("memberships")
+        .withIndex("by_member", (q) => q.eq("memberId", a.memberId))
+        .collect();
+      if (existing.some((m) => m.status === "active")) {
+        throw new ConvexError("This member already has an active membership");
+      }
 
-    const cabin = await ctx.db
-      .query("cabins")
-      .withIndex("by_number", (q) => q.eq("number", a.cabinNumber))
-      .unique();
-    if (!cabin) throw new ConvexError("Cabin not found");
-    if (cabin.status !== "available")
-      throw new ConvexError(`Cabin ${a.cabinNumber} is not available`);
+      const cabin = await ctx.db
+        .query("cabins")
+        .withIndex("by_number", (q) => q.eq("number", a.cabinNumber))
+        .unique();
+      if (!cabin) throw new ConvexError("Cabin not found");
+      if (cabin.status !== "available")
+        throw new ConvexError(`Cabin ${a.cabinNumber} is not available`);
 
-    const id = await ctx.db.insert("memberships", { ...a, status: "active" });
-    await ctx.db.patch(cabin._id, { status: "occupied" });
-    await logAudit(
-      ctx,
-      admin.email,
-      "create",
-      "memberships",
-      id,
-      `Assigned cabin ${a.cabinNumber} to ${member.name}`,
-    );
-    return id;
-  },
+      const id = await ctx.db.insert("memberships", { ...a, status: "active" });
+      await ctx.db.patch(cabin._id, { status: "occupied" });
+      await logAudit(
+        ctx,
+        admin.email,
+        "create",
+        "memberships",
+        id,
+        `Assigned cabin ${a.cabinNumber} to ${member.name}`,
+      );
+      return id;
+    }),
 });
 
 export const extend = mutation({
   args: { id: v.id("memberships"), months: v.number(), amount: v.number() },
-  handler: async (ctx, { id, months, amount }) => {
-    const admin = await requireAdmin(ctx);
-    if (!Number.isInteger(months) || months < 1 || months > 12) {
-      throw new ConvexError("Months must be between 1 and 12");
-    }
-    checkAmount(amount);
+  handler: async (ctx, { id, months, amount }) =>
+    safe(async () => {
+      const admin = await requireAdmin(ctx);
+      if (!Number.isInteger(months) || months < 1 || months > 12) {
+        throw new ConvexError("Months must be between 1 and 12");
+      }
+      checkAmount(amount);
 
-    const m = await ctx.db.get(id);
-    if (!m || m.status !== "active")
-      throw new ConvexError("Only an active membership can be extended");
+      const m = await ctx.db.get(id);
+      if (!m || m.status !== "active")
+        throw new ConvexError("Only an active membership can be extended");
 
-    const endDate = addMonthsIST(m.endDate, months);
-    if (endDate < Date.now()) {
-      throw new ConvexError(
-        "That would still end in the past. End this membership and create a new one.",
+      const endDate = addMonthsIST(m.endDate, months);
+      if (endDate < Date.now()) {
+        throw new ConvexError(
+          "That would still end in the past. End this membership and create a new one.",
+        );
+      }
+
+      await ctx.db.patch(id, { endDate, amountDue: m.amountDue + amount });
+      const member = await ctx.db.get(m.memberId);
+      await logAudit(
+        ctx,
+        admin.email,
+        "extend",
+        "memberships",
+        id,
+        `Extended ${member?.name ?? "member"} (cabin ${m.cabinNumber}) by ${months} month(s)`,
       );
-    }
-
-    await ctx.db.patch(id, { endDate, amountDue: m.amountDue + amount });
-    const member = await ctx.db.get(m.memberId);
-    await logAudit(
-      ctx,
-      admin.email,
-      "extend",
-      "memberships",
-      id,
-      `Extended ${member?.name ?? "member"} (cabin ${m.cabinNumber}) by ${months} month(s)`,
-    );
-  },
+    }),
 });
 
 export const cancel = mutation({
   args: { id: v.id("memberships") },
-  handler: async (ctx, { id }) => {
-    const admin = await requireAdmin(ctx);
-    const m = await ctx.db.get(id);
-    if (!m || m.status !== "active")
-      throw new ConvexError("Membership is not active");
+  handler: async (ctx, { id }) =>
+    safe(async () => {
+      const admin = await requireAdmin(ctx);
+      const m = await ctx.db.get(id);
+      if (!m || m.status !== "active")
+        throw new ConvexError("Membership is not active");
 
-    await ctx.db.patch(id, { status: "cancelled" });
-    await freeCabin(ctx, m.cabinNumber);
-    const member = await ctx.db.get(m.memberId);
-    await logAudit(
-      ctx,
-      admin.email,
-      "cancel",
-      "memberships",
-      id,
-      `Ended membership of ${member?.name ?? "member"} (cabin ${m.cabinNumber})`,
-    );
-  },
+      await ctx.db.patch(id, { status: "cancelled" });
+      await freeCabin(ctx, m.cabinNumber);
+      const member = await ctx.db.get(m.memberId);
+      await logAudit(
+        ctx,
+        admin.email,
+        "cancel",
+        "memberships",
+        id,
+        `Ended membership of ${member?.name ?? "member"} (cabin ${m.cabinNumber})`,
+      );
+    }),
 });
 
 // Called by the daily cron, not by browsers.

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Field, errorText, input } from "@/components/admin/ui";
+import { Field, attempt, input } from "@/components/admin/ui";
+import type { Result } from "../../../../convex/lib/result";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -74,17 +75,12 @@ export default function MembershipsPage() {
     );
   }
 
-  async function run(fn: () => Promise<unknown>, after?: () => void) {
+  async function run(fn: () => Promise<Result<unknown>>, after?: () => void) {
     setBusy(true);
     setError("");
-    try {
-      await fn();
-      after?.();
-    } catch (e) {
-      setError(errorText(e));
-    } finally {
-      setBusy(false);
-    }
+    const r = await attempt(fn(), setError);
+    setBusy(false);
+    if (r) after?.();
   }
 
   function save() {

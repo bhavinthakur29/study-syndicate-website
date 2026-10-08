@@ -15,9 +15,10 @@ import {
   Card,
   Field,
   PageHeader,
-  errorText,
+  attempt,
   input,
 } from "@/components/admin/ui";
+import { Result } from "../../../../convex/lib/result";
 
 type Form = {
   membershipId: string;
@@ -69,17 +70,15 @@ export default function PaymentsPage() {
     );
   }
 
-  async function run(fn: () => Promise<unknown>, after?: () => void) {
+  async function run<T>(
+    fn: () => Promise<Result<T>>,
+    after?: (data: T) => void,
+  ) {
     setBusy(true);
     setError("");
-    try {
-      await fn();
-      after?.();
-    } catch (e) {
-      setError(errorText(e));
-    } finally {
-      setBusy(false);
-    }
+    const r = await attempt(fn(), setError);
+    setBusy(false);
+    if (r) after?.(r.data);
   }
 
   function save() {
@@ -95,8 +94,8 @@ export default function PaymentsPage() {
       : startOfDayIST(form.date) + 12 * 3_600_000;
 
     run(
-      async () => {
-        const receiptNo = await record({
+      () =>
+        record({
           membershipId: form.membershipId as Id<"memberships">,
           amount: Number(form.amount),
           method: form.method,
@@ -105,10 +104,11 @@ export default function PaymentsPage() {
               ? form.reference
               : undefined,
           receivedAt,
-        });
+        }),
+      (receiptNo) => {
         setNotice(`Payment recorded. Receipt ${receiptNo}`);
+        setForm(null);
       },
-      () => setForm(null),
     );
   }
 

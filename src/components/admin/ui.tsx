@@ -1,6 +1,7 @@
 import { ConvexError } from "convex/values";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import type { Result } from "../../../convex/lib/result";
 
 export const input =
   "w-full rounded-xl border border-navy/20 bg-white px-4 py-3 text-navy outline-none focus:border-gold";
@@ -87,4 +88,21 @@ export function PageHeader({
       {action}
     </div>
   );
+}
+
+export async function attempt<T>(
+  promise: Promise<Result<T>>,
+  setError: (m: string) => void,
+) {
+  try {
+    const r = await promise;
+    if (!r.ok) {
+      setError(r.error);
+      return undefined;
+    }
+    return { data: r.data };
+  } catch {
+    setError("Something went wrong. Please try again.");
+    return undefined;
+  }
 }
