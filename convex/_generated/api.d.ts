@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as auditLogs from "../auditLogs.js";
+import type * as backup from "../backup.js";
 import type * as cabins from "../cabins.js";
 import type * as crons from "../crons.js";
 import type * as dashboard from "../dashboard.js";
@@ -31,6 +33,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  auditLogs: typeof auditLogs;
+  backup: typeof backup;
   cabins: typeof cabins;
   crons: typeof crons;
   dashboard: typeof dashboard;

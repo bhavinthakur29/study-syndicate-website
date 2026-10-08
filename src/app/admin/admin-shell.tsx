@@ -13,10 +13,12 @@ import {
 import { SignInButton, SignOutButton, UserButton } from "@clerk/nextjs";
 import {
   DoorOpen,
+  Download,
   ExternalLink,
   IndianRupee,
   LayoutDashboard,
   Menu,
+  ScrollText,
   Users,
   X,
   type LucideIcon,
@@ -30,6 +32,8 @@ const nav: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/admin/members", label: "Members", icon: Users },
   { href: "/admin/memberships", label: "Memberships", icon: DoorOpen },
   { href: "/admin/payments", label: "Payments", icon: IndianRupee },
+  { href: "/admin/audit", label: "Audit log", icon: ScrollText },
+  { href: "/admin/backup", label: "Backup", icon: Download },
 ];
 
 type Me = { name: string; email: string; role: string };
