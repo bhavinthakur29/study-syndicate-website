@@ -23,7 +23,7 @@ const steps = [
   ],
   [
     "Each week",
-    "Open Backup and follow the steps to download a copy of your data.",
+    "Open Backup and download the three files. Keep them in your email or Google Drive.",
   ],
 ];
 
@@ -58,9 +58,7 @@ export default function HelpPage() {
           A student with a current cabin booking can't be deactivated. End the
           booking first.
         </p>
-        <p>
-          Every change is written to the Audit log, with who made it and when.
-        </p>
+        <p>Every change is recorded in the Activity history.</p>
       </Card>
     </div>
   );

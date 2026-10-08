@@ -10,7 +10,7 @@ import {
   Unauthenticated,
   useQuery,
 } from "convex/react";
-import { SignInButton, SignOutButton, UserButton } from "@clerk/nextjs";
+import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
 import {
   DoorOpen,
   Download,
@@ -35,7 +35,7 @@ const nav = [
   { href: "/admin/memberships", label: "Cabin bookings", icon: DoorOpen },
   { href: "/admin/payments", label: "Fees", icon: IndianRupee },
   { href: "/admin/members", label: "Members", icon: Users },
-  { href: "/admin/audit", label: "Audit log", icon: ScrollText },
+  { href: "/admin/audit", label: "Activity History", icon: ScrollText },
   { href: "/admin/backup", label: "Backup", icon: Download },
   { href: "/admin/help", label: "How it works", icon: HelpCircle },
 ];
@@ -49,6 +49,7 @@ function SidebarContent({
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
+  const { user } = useUser();
 
   return (
     <div className="flex h-full flex-col">
@@ -92,7 +93,7 @@ function SidebarContent({
         })}
       </nav>
 
-      <div className="space-y-4 border-t border-white/10 p-4">
+      <div className="space-y-3 border-t border-white/10 p-4">
         <Link
           href="/"
           target="_blank"
@@ -100,13 +101,31 @@ function SidebarContent({
         >
           <ExternalLink className="size-4" aria-hidden /> View website
         </Link>
-        <div className="flex items-center gap-3">
-          <UserButton />
+
+        <Link
+          href="/admin/account"
+          onClick={onNavigate}
+          className="flex items-center gap-3 rounded-xl p-2 hover:bg-white/10"
+        >
+          {user?.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={user.imageUrl} alt="" className="size-9 rounded-full" />
+          ) : (
+            <span className="grid size-9 place-items-center rounded-full bg-gold font-bold text-navy">
+              {me.name.charAt(0).toUpperCase()}
+            </span>
+          )}
           <div className="min-w-0 text-sm">
             <p className="truncate font-semibold">{me.name}</p>
-            <p className="capitalize text-white/60">{me.role}</p>
+            <p className="capitalize text-white/60">{me.role} · My account</p>
           </div>
-        </div>
+        </Link>
+
+        <SignOutButton>
+          <button className="w-full rounded-xl border border-white/20 py-2.5 text-sm font-semibold text-white/80 hover:bg-white/10">
+            Sign out
+          </button>
+        </SignOutButton>
       </div>
     </div>
   );

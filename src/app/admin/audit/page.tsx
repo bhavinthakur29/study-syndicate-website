@@ -41,13 +41,14 @@ export default function AuditPage() {
     <div>
       <PageHeader title="Audit log" />
       <p className="mt-2 text-navy/70">
-        The latest 300 actions. Only admins can see this page.
+        A record of everything that was added, changed or removed, and who did
+        it. The latest 300 entries.
       </p>
 
       <div className="mt-6 flex flex-wrap gap-3">
         <input
           className={`${input} max-w-xs`}
-          placeholder="Search actions or people"
+          placeholder="Search by student or person"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -58,7 +59,7 @@ export default function AuditPage() {
         >
           {entities.map((e) => (
             <option key={e} value={e}>
-              {e === "all" ? "Everything" : e}
+              {e === "all" ? "All activity" : e}
             </option>
           ))}
         </select>
@@ -74,7 +75,7 @@ export default function AuditPage() {
             <Card className="py-3">
               <p className="font-semibold text-navy">{l.summary}</p>
               <p className="text-sm text-navy/60">
-                {when(l.at)} · {l.actor} · {l.action} {l.entity}
+                {when(l.at)} · {l.actor}
               </p>
             </Card>
           </li>

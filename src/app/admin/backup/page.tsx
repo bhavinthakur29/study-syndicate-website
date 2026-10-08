@@ -13,7 +13,50 @@ import {
 } from "@/components/admin/ui";
 
 type Rows = Record<string, string | number>[];
-type Scope = "members" | "memberships" | "payments" | "everything";
+type Scope = "members" | "memberships" | "payments";
+
+const headers: Record<string, string> = {
+  name: "Name",
+  phone: "Mobile number",
+  email: "Email",
+  exam: "Exam preparing for",
+  under18: "Under 18",
+  guardianName: "Guardian name",
+  guardianPhone: "Guardian mobile",
+  status: "Status",
+  joined: "Joined on",
+  notes: "Notes",
+  member: "Student",
+  cabin: "Cabin",
+  plan: "Plan",
+  amountDue: "Total fee (₹)",
+  paid: "Paid (₹)",
+  balance: "Still due (₹)",
+  start: "Start date",
+  end: "Paid up to",
+  receiptNo: "Receipt number",
+  date: "Date",
+  amount: "Amount (₹)",
+  method: "Paid by",
+  reference: "UPI reference",
+  voidReason: "Reason cancelled",
+  recordedBy: "Entered by",
+};
+
+const words: Record<string, string> = {
+  received: "Received",
+  void: "Cancelled",
+  active: "Active",
+  inactive: "Inactive",
+  expired: "Ended on time",
+  cancelled: "Ended early",
+  offer: "Opening offer",
+  monthly: "Monthly",
+  cash: "Cash",
+  upi: "UPI",
+};
+
+const friendlyColumns = new Set(["status", "plan", "method"]);
 
 function toCsv(rows: Rows) {
   const keys = Object.keys(rows[0]);
@@ -23,14 +66,21 @@ function toCsv(rows: Rows) {
     if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
     return `"${s.replace(/"/g, '""')}"`;
   };
-  return [
-    keys.join(","),
-    ...rows.map((r) => keys.map((k) => cell(r[k])).join(",")),
-  ].join("\r\n");
+  const head = keys.map((k) => cell(headers[k] ?? k)).join(",");
+  const body = rows.map((r) =>
+    keys
+      .map((k) =>
+        cell(friendlyColumns.has(k) ? (words[String(r[k])] ?? r[k]) : r[k]),
+      )
+      .join(","),
+  );
+  return [head, ...body].join("\r\n");
 }
 
-function download(name: string, content: string, type: string) {
-  const url = URL.createObjectURL(new Blob([content], { type }));
+function download(name: string, content: string) {
+  const url = URL.createObjectURL(
+    new Blob([content], { type: "text/csv;charset=utf-8" }),
+  );
   const a = document.createElement("a");
   a.href = url;
   a.download = name;
@@ -38,11 +88,25 @@ function download(name: string, content: string, type: string) {
   URL.revokeObjectURL(url);
 }
 
-const buttons: { scope: Scope; label: string }[] = [
-  { scope: "members", label: "Members (CSV)" },
-  { scope: "memberships", label: "Memberships (CSV)" },
-  { scope: "payments", label: "Payments (CSV)" },
-  { scope: "everything", label: "Everything (JSON)" },
+const items: { scope: Scope; title: string; text: string; file: string }[] = [
+  {
+    scope: "members",
+    title: "Students list",
+    text: "Name, mobile number, exam and guardian details of every student.",
+    file: "students",
+  },
+  {
+    scope: "memberships",
+    title: "Cabin bookings",
+    text: "Who had which cabin, the dates, the fee, and what is still due.",
+    file: "cabin-bookings",
+  },
+  {
+    scope: "payments",
+    title: "Fees received",
+    text: "Every fee with its receipt number, date, and how it was paid.",
+    file: "fees-received",
+  },
 ];
 
 export default function BackupPage() {
@@ -51,59 +115,53 @@ export default function BackupPage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
-  async function run(scope: Scope) {
-    setBusy(scope);
+  async function run(item: (typeof items)[number]) {
+    setBusy(item.scope);
     setError("");
     setNotice("");
-    const r = await attempt(exportData({ scope }), setError);
+    const r = await attempt(exportData({ scope: item.scope }), setError);
     setBusy(null);
     if (!r) return;
 
-    const stamp = toDateInput(Date.now());
-    if (scope === "everything") {
-      const body = { generatedAt: new Date().toISOString(), ...r.data };
-      download(
-        `study-syndicate-export-${stamp}.json`,
-        JSON.stringify(body, null, 2),
-        "application/json",
-      );
-    } else {
-      const rows = r.data[scope] as Rows;
-      if (rows.length === 0) return setNotice("Nothing to export yet.");
-      download(
-        `${scope}-${stamp}.csv`,
-        `\ufeff${toCsv(rows)}`,
-        "text/csv;charset=utf-8",
-      );
-    }
-    setNotice(
-      "Download started. The file contains personal data, so keep it private.",
+    const rows = r.data[item.scope] as Rows;
+    if (rows.length === 0)
+      return setNotice("There is nothing to download yet.");
+    download(
+      `${item.file}-${toDateInput(Date.now())}.csv`,
+      `\ufeff${toCsv(rows)}`,
     );
+    setNotice(`${item.title} downloaded. Look in your Downloads folder.`);
   }
 
   return (
     <div>
-      <PageHeader title="Backup" />
+      <PageHeader
+        title="Backup"
+        intro="Download a copy of your records and keep it somewhere safe, like your email or Google Drive. The files open in Excel or Google Sheets. Do this once a week."
+      />
 
-      <h2 className="mt-8 font-display text-xl font-extrabold text-navy">
-        Readable copies
-      </h2>
-      <p className="mt-2 text-navy/70">
-        For spreadsheets and records. These are not a restore point, and every
-        download is written to the audit log.
-      </p>
-      <div className="mt-4 flex flex-wrap gap-3">
-        {buttons.map((b) => (
-          <Button
-            key={b.scope}
-            variant="quiet"
-            disabled={busy !== null}
-            onClick={() => run(b.scope)}
-          >
-            {busy === b.scope ? "Preparing…" : b.label}
-          </Button>
+      <ul className="mt-6 space-y-3">
+        {items.map((item) => (
+          <li key={item.scope}>
+            <Card className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="font-display text-lg font-extrabold text-navy">
+                  {item.title}
+                </p>
+                <p className="text-sm text-navy/70">{item.text}</p>
+              </div>
+              <Button
+                variant="quiet"
+                disabled={busy !== null}
+                onClick={() => run(item)}
+              >
+                {busy === item.scope ? "Preparing…" : "Download"}
+              </Button>
+            </Card>
+          </li>
         ))}
-      </div>
+      </ul>
+
       {notice && (
         <p role="status" className="mt-4 font-semibold text-navy">
           {notice}
@@ -115,34 +173,15 @@ export default function BackupPage() {
         </div>
       )}
 
-      <h2 className="mt-10 font-display text-xl font-extrabold text-navy">
-        Real backup (for disasters)
-      </h2>
-      <Card className="mt-4 space-y-3 text-navy/80">
-        <p>
-          Convex's free plan keeps no automatic backups, so download one
-          regularly. On the computer that runs the project:
+      <Card className="mt-8 space-y-2 text-navy/80">
+        <p className="font-display text-lg font-extrabold text-navy">
+          Good to know
         </p>
-        <pre className="overflow-x-auto rounded-xl bg-navy-deep p-4 text-sm text-white">
-          {`bunx convex export --prod --path ./backups/`}
-        </pre>
         <p>
-          Use <code>--prod</code> once production exists. Without it the command
-          backs up the dev database. The Convex dashboard also has a Backup
-          &amp; Restore page with a "Backup Now" button.
+          These files contain students' phone numbers. Don't share them with
+          anyone, and delete old copies you no longer need.
         </p>
-        <ul className="list-disc space-y-1 pl-5">
-          <li>
-            Back up weekly once real data is in, and before every big change.
-          </li>
-          <li>
-            Keep copies off this computer, in an encrypted or password-protected
-            place.
-          </li>
-          <li>
-            Never commit a backup to Git. Delete old copies you no longer need.
-          </li>
-        </ul>
+        <p>Each download is noted in the Activity history.</p>
       </Card>
     </div>
   );
