@@ -104,6 +104,9 @@ export function Footer() {
           <p>
             © {new Date().getFullYear()} {site.name}. Shastri Nagar, Jammu.
           </p>
+          <Link href="/admin" rel="nofollow" className="hover:text-gold">
+            Staff login
+          </Link>
           <p>
             Designed and developed by{" "}
             {site.credit.url ? (

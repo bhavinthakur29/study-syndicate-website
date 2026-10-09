@@ -10,7 +10,7 @@ import {
   Unauthenticated,
   useQuery,
 } from "convex/react";
-import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
+import { SignIn, SignOutButton, useUser } from "@clerk/nextjs";
 import {
   DoorOpen,
   Download,
@@ -40,6 +40,64 @@ const nav = [
   { href: "/admin/help", label: "How it works", icon: HelpCircle },
 ];
 type Me = { name: string; email: string; role: string };
+
+function SignOutConfirm() {
+  const ref = useRef<HTMLDialogElement>(null);
+
+  return (
+    <>
+      <button
+        onClick={() => ref.current?.showModal()}
+        className="w-full rounded-xl border border-white/20 py-2.5 text-sm font-semibold text-white/80 hover:bg-white/10"
+      >
+        Sign out
+      </button>
+      <dialog
+        ref={ref}
+        className="m-auto w-[min(24rem,90vw)] rounded-2xl bg-white p-6 text-navy backdrop:bg-black/55"
+      >
+        <h2 className="font-display text-xl font-extrabold">Sign out?</h2>
+        <p className="mt-2 text-navy/70">
+          You will need to sign in with Google again to use the admin.
+        </p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <SignOutButton>
+            <button className="rounded-xl bg-navy px-5 py-3 font-bold text-white">
+              Yes, sign out
+            </button>
+          </SignOutButton>
+          <button
+            onClick={() => ref.current?.close()}
+            className="rounded-xl border-2 border-navy px-5 py-3 font-bold text-navy"
+          >
+            Stay signed in
+          </button>
+        </div>
+      </dialog>
+    </>
+  );
+}
+
+function AuthFrame({ children }: { children: ReactNode }) {
+  return (
+    <div className="hero-bg grid min-h-screen place-items-center p-5 text-white">
+      <div className="w-full max-w-md text-center">
+        <Image
+          src="/site-logo.png"
+          alt=""
+          width={256}
+          height={256}
+          className="mx-auto h-16 w-auto"
+        />
+        <p className="mt-4 font-display text-2xl font-extrabold">
+          The Study Syndicate
+        </p>
+        <p className="text-white/70">Staff area</p>
+        <div className="mt-6 flex justify-center">{children}</div>
+      </div>
+    </div>
+  );
+}
 
 function SidebarContent({
   me,
@@ -121,11 +179,7 @@ function SidebarContent({
           </div>
         </Link>
 
-        <SignOutButton>
-          <button className="w-full rounded-xl border border-white/20 py-2.5 text-sm font-semibold text-white/80 hover:bg-white/10">
-            Sign out
-          </button>
-        </SignOutButton>
+        <SignOutConfirm />
       </div>
     </div>
   );
@@ -168,13 +222,14 @@ function Authorized({ children }: { children: ReactNode }) {
 
   if (me === null) {
     return (
-      <div className="p-5 md:p-8">
-        <div className="max-w-md rounded-2xl border border-navy/10 bg-white p-6">
-          <h1 className="font-display text-2xl font-extrabold text-navy">
+      <AuthFrame>
+        <div className="w-full rounded-2xl bg-white p-6 text-left text-navy">
+          <h1 className="font-display text-2xl font-extrabold">
             Not authorised
           </h1>
           <p className="mt-2 text-navy/70">
-            This account doesn't have access to the admin area.
+            This Google account doesn't have access to the admin area. Sign in
+            with a different account, or ask the owner to add you.
           </p>
           <SignOutButton>
             <button className="mt-4 rounded-xl bg-navy px-5 py-3 font-bold text-white">
@@ -182,7 +237,7 @@ function Authorized({ children }: { children: ReactNode }) {
             </button>
           </SignOutButton>
         </div>
-      </div>
+      </AuthFrame>
     );
   }
 
@@ -255,24 +310,21 @@ export function AdminShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-paper">
       <AuthLoading>
-        <p className="p-6 text-navy/70">Loading…</p>
+        <AuthFrame>
+          <p className="text-white/70">Loading…</p>
+        </AuthFrame>
       </AuthLoading>
       <Unauthenticated>
-        <div className="p-5 md:p-8">
-          <div className="max-w-md rounded-2xl border border-navy/10 bg-white p-6">
-            <h1 className="font-display text-2xl font-extrabold text-navy">
-              Staff sign-in
-            </h1>
-            <p className="mt-2 text-navy/70">
-              Sign in with your Google account.
-            </p>
-            <SignInButton mode="modal">
-              <button className="mt-4 rounded-xl bg-gold px-5 py-3 font-bold text-navy">
-                Sign in with Google
-              </button>
-            </SignInButton>
-          </div>
-        </div>
+        <AuthFrame>
+          <SignIn
+            routing="hash"
+            forceRedirectUrl="/admin"
+            appearance={{
+              variables: { colorPrimary: "#14193f", borderRadius: "0.75rem" },
+              elements: { footerAction: { display: "none" } },
+            }}
+          />
+        </AuthFrame>
       </Unauthenticated>
       <Authenticated>
         <Authorized>{children}</Authorized>
