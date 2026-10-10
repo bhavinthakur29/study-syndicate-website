@@ -1,119 +1,123 @@
-# The Study Syndicate Library: Website
+# The Study Syndicate Library: Website and Admin
 
-Official website for **The Study Syndicate Library**, a premium 24-hour AC study library in Shastri Nagar, Jammu (180004).
+Website and admin app for **The Study Syndicate Library**, a 24-hour AC study library in Shastri Nagar, Jammu (180004). Private project, built and maintained by [TekSquad](https://teksquad.tech/) for the library's owner.
 
-**Live site:** https://thestudysyndicate.tekbiz.dev
+- Website: https://thestudysyndicate.tekbiz.dev
+- Admin: https://thestudysyndicate.tekbiz.dev/admin (Google sign-in, approved accounts only)
 
-## Features
+## Who uses what
 
-- Fast, mostly static site: every section is a server component, with client JavaScript only where interaction needs it
-- Sections: hero, facilities (bento grid), free extras and Every Sunday doubt sessions, plans with cabin availability meter, find us (entrance photo and map), and FAQ
-- Mobile-first design with an animated off-canvas menu, a sticky Call/WhatsApp bar, and a scroll-to-top button
-- Enquiries and reservations go through WhatsApp and phone (no backend yet)
-- Local SEO: `Library` and `FAQPage` JSON-LD, sitemap, robots, canonical URLs, geo metadata, Open Graph and Twitter share images
-- Accessible by default: keyboard navigation, focus handling, ARIA labels, and reduced-motion support
+| Who                  | Uses                                 | For                                                                        |
+| -------------------- | ------------------------------------ | -------------------------------------------------------------------------- |
+| Students and parents | Public website                       | Facilities, offer, location, calling or WhatsApp to reserve                |
+| Owner                | Admin app                            | Admissions, cabin bookings, fees and receipts, dashboard, backups          |
+| Staff (later)        | Admin app                            | Day-to-day work. The role exists in the data model, but has no screens yet |
+| Developer            | Convex, Clerk and Netlify dashboards | Deployments, backups, access changes                                       |
 
-## Tech stack
+## How it fits together
 
-| Area            | Choice                                             |
-| --------------- | -------------------------------------------------- |
-| Framework       | Next.js 16 (App Router, Turbopack) and React 19    |
-| Language        | TypeScript                                         |
-| Styling         | Tailwind CSS v4 and shadcn/ui (Radix, Nova preset) |
-| Icons           | lucide-react                                       |
-| Fonts           | Bricolage Grotesque and DM Sans via `next/font`    |
-| Package manager | Bun                                                |
-| Hosting         | Netlify                                            |
+- **Website** (`src/app/(site)`): mostly static pages. It loads no database or login code.
+- **Admin** (`src/app/admin`): behind Google sign-in, excluded from search engines and the contact tracker.
+- **Convex** (`convex/`): database and server functions, plus a daily job at 12:30 AM IST that closes expired bookings.
+- **Clerk**: proves who someone is. **The `staffUsers` table decides what they may do.** Every Convex function checks this on the server.
+- **Netlify**: hosts the site. Its build command also deploys the Convex functions.
 
-## Getting started
+## Business rules the system enforces
 
-Requires [Bun](https://bun.sh) and Node.js 20 or newer.
+- One active cabin booking per student, and one student per cabin.
+- Fees are never edited. A mistake is voided with a reason, and receipt numbers are never reused.
+- A fee can't exceed the amount due or carry a future date.
+- A student with a current booking can't be deactivated.
+- Every change goes to the activity history (no personal details in the log).
+- Students under 18 need a guardian's name and mobile number.
+
+## Environments and secrets
+
+|                    | Local development          | Production                                                                                   |
+| ------------------ | -------------------------- | -------------------------------------------------------------------------------------------- |
+| Convex             | dev deployment             | `keen-akita-170`                                                                             |
+| Clerk              | test keys                  | live keys, domain `thestudysyndicate.tekbiz.dev` (secondary application)                     |
+| Where secrets live | `.env.local` (git-ignored) | Netlify environment variables; `CLERK_JWT_ISSUER_DOMAIN` on the Convex production deployment |
+
+**Never put live Clerk keys in `.env.local`.** Live keys only work on the live domain, and local pages hang on "Loading". `CONVEX_DEPLOY_KEY` is scoped to Netlify's Production context only.
+
+## Runbook (developer)
+
+**Deploy:** push to `main` with auto-publishing on. Netlify runs `npx convex deploy --cmd-url-env-var-name NEXT_PUBLIC_CONVEX_URL --cmd 'npm run build'`. Builds cost Netlify credits on the free plan, so batch changes.
+
+**Add an admin** (use the person's exact Google address):
+
+```bash
+bunx convex run --prod seed:seedAdmin '{"email":"ADDRESS","name":"NAME"}'
+```
+
+**Remove access:** set `active` to `false` on their row in the `staffUsers` table (Convex dashboard, production).
+
+**Weekly backup, and before big changes:**
+
+```bash
+bunx convex export --prod --path ./backups/
+```
+
+Store copies off this machine, encrypted. `/backups` is git-ignored. Practise a restore into a throwaway project, never production. The owner's Backup page gives readable CSVs only, not a restore point.
+
+**Change the offer or prices:** `src/content/offer.ts` (public site) and `convex/lib/plans.ts` (admin). Keep them in sync, and update `public/llms.txt`.
+
+**Update the cabin count on the public site:** `src/content/plans.ts` (manual for now).
+
+**Keys leaked or lost:** rotate in the Clerk or Convex dashboard, update Netlify, redeploy with the cache cleared.
+
+## Data and privacy
+
+- **Held:** student name, mobile, exam, optional email, cabin, dates, fees and receipts, guardian details for under-18s.
+- **Where:** Convex (servers outside India), with sign-in handled by Clerk.
+- **Never held:** card details, ID documents. Payments are cash or UPI at the library.
+- **Pages:** `/privacy` and `/terms` read from `src/content/legal.ts`. A lawyer should review them. India's DPDP Rules, 2025 apply notice, consent and children's-data duties from about May 2027, so verifiable parental consent for under-18s needs a proper flow before then.
+
+## Decisions
+
+- **Seat requests stay on WhatsApp and phone.** Cabins are assigned in person, so instant online booking invites fake holds.
+- **Payments are recorded, not collected online.** No payment provider, so no card data to protect.
+- **Convex plus Clerk** keep the stack small and free. The free plan has hard limits and no automatic backups, hence the weekly export.
+- **Business-rule errors are returned as results**, not thrown, so the console shows only real faults.
+- **Content lives in `src/content/`**, so most edits need no component changes.
+
+## Known limitations and roadmap
+
+- [ ] Go-live with real data (blocked on Netlify credits until the next cycle)
+- [ ] Verifiable parental consent flow for under-18s
+- [ ] Admin design pass from the owner's feedback
+- [ ] Edit a booking, move cabin, refunds
+- [ ] Student history page, cabin maintenance toggle
+- [ ] Photo gallery (needs real photos)
+- [ ] Staff screens
+- [ ] Student login and self-service booking
+- Public cabin meter and prices are updated by hand.
+
+## Working on the code
+
+Needs [Bun](https://bun.sh). Use test Clerk keys and the dev Convex deployment.
 
 ```bash
 bun install
-bun dev
+bunx convex dev   # one terminal
+bun dev           # another terminal
 ```
 
-Open http://localhost:3000. To check a production build:
-
-```bash
-bun run build
-bun start
-```
-
-## Environment variables
-
-| Variable                | Purpose                                                                                                                                             |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_SITE_URL`  | The live site URL, with no trailing slash. It feeds canonical links, the sitemap, schema and share previews. Falls back to `http://localhost:3000`. |
-| `NEXT_PUBLIC_GSC_TOKEN` | Optional. The `content` value of the Google Search Console HTML-tag verification.                                                                   |
-
-`NEXT_PUBLIC_` values are baked in at build time. After changing one on Netlify, run **Deploys, Trigger deploy, Clear cache and deploy site**.
-
-For local development, create a `.env.local` file (it is git-ignored).
+`bunx convex dev` writes the Convex values into `.env.local`. Add the Clerk **test** keys there. Seed the dev database with `seed:seedCabins` and `seed:seedAdmin` (without `--prod`).
 
 ## Project structure
 
 ```
-public/
-  images/            cabins.jpeg, entrance.jpeg
-  site-logo.svg      navbar logo
-  footer-logo.png    footer logo (also used in schema)
-src/
-  app/               layout, page, sitemap.ts, robots.ts, share images
-  components/
-    layout/          navbar, footer, sticky-contact-bar, scroll-to-top
-    sections/        hero, facilities, free-and-sunday, plans, find-us, faq
-    shared/          container, json-ld
-    ui/              shadcn primitives
-  content/           site.ts, offer.ts, plans.ts, facilities.ts, free-extras.ts,
-                     sessions.ts, faqs.ts
-  lib/               seo.ts (schema builders), utils.ts
+convex/        schema, functions, daily job, seed commands (lib/ holds shared helpers)
+public/        images, logos, icons, llms.txt
+src/app/       (site) public pages, admin/ app, sitemap, robots, manifest, 404, share images
+src/components admin/, layout/, sections/, shared/, ui/
+src/content/   public site content, including legal.ts
+src/lib/       SEO schema builders
+src/proxy.ts   Clerk middleware, runs for /admin only
 ```
-
-Business content lives in `src/content/`, and components only render it, so most updates need no component changes.
-
-## Updating content
-
-| To change                                               | Edit                         |
-| ------------------------------------------------------- | ---------------------------- |
-| Phone, address, hours, links, map, coordinates, credits | `src/content/site.ts`        |
-| Offer price and regular price                           | `src/content/offer.ts`       |
-| Total and booked cabin count, plan inclusions           | `src/content/plans.ts`       |
-| Facilities tiles                                        | `src/content/facilities.ts`  |
-| Free extras                                             | `src/content/free-extras.ts` |
-| Sunday doubt session day, time and subjects             | `src/content/sessions.ts`    |
-| FAQ questions and answers                               | `src/content/faqs.ts`        |
-
-Keep the **booked cabin count** in `plans.ts` current, and push after each change. Business name, address and phone must match the Google Business Profile exactly.
-
-The facilities grid has 4 columns on desktop. If you add or remove a tile, keep the total a multiple of 4 by adjusting the `className` spans in `facilities.ts`.
-
-## SEO
-
-- Structured data is built in `src/lib/seo.ts` (`Library`) and `src/content/faqs.ts` (`FAQPage`)
-- Share images are `src/app/opengraph-image.png` and `twitter-image.png` (1200x630, keep under about 300 KB). WhatsApp caches previews, so test with a changed query string such as `/?v=2`
-- Search Console: add the live URL as a URL-prefix property, then submit `/sitemap.xml`
-
-## Deployment
-
-The site deploys to Netlify from the `main` branch. Every push to `main` goes live, so check `bun run build` locally first.
-
-## Git workflow
-
-- Commit style: [Conventional Commits](https://www.conventionalcommits.org) (`feat:`, `fix:`, `seo:`, `chore:`)
-- `main` is always deployable
-
-## Roadmap
-
-- [ ] Performance and accessibility audit (Lighthouse)
-- [ ] Photo gallery (needs more real photos)
-- [ ] Locality line for nearby areas (180004 and 180010)
-- [ ] Headless CMS for owner-editable content
-- [ ] Admin panel and student portal (subscriptions, payments, mock test tracking)
 
 ## Credits
 
-Designed and developed by [TekSquad](https://teksquad.tech/).
-
-All rights reserved. This is a private project for The Study Syndicate Library.
+Designed and developed by [TekSquad](https://teksquad.tech/). All rights reserved.

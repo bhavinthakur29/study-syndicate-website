@@ -107,6 +107,14 @@ export function Footer() {
           <Link href="/admin" rel="nofollow" className="hover:text-gold">
             Staff login
           </Link>
+          <span className="flex gap-4">
+            <Link href="/privacy" className="hover:text-gold">
+              Privacy
+            </Link>
+            <Link href="/terms" className="hover:text-gold">
+              Terms
+            </Link>
+          </span>
           <p>
             Designed and developed by{" "}
             {site.credit.url ? (
