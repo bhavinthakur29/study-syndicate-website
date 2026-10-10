@@ -80,7 +80,7 @@ function SignOutConfirm() {
 
 function AuthFrame({ children }: { children: ReactNode }) {
   return (
-    <div className="hero-bg grid min-h-screen place-items-center p-5 text-white">
+    <div className="hero-bg flex min-h-screen flex-col items-center px-5 pt-[18vh] text-white">
       <div className="w-full max-w-md text-center">
         <Image
           src="/site-logo.png"
