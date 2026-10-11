@@ -31,13 +31,16 @@ export default function AdminHome() {
     );
   }
 
-  const stats = [
+  const plural = (n: number, word: string) =>
+    `${n} ${word}${n === 1 ? "" : "s"}`;
+
+  const stats: { label: string; value: string; note?: string }[] = [
     { label: "Collected today", value: rupees(s.collected.today) },
     { label: "Collected this month", value: rupees(s.collected.month) },
     {
-      label: "Outstanding dues",
+      label: "Fees still due",
       value: rupees(s.dues.total),
-      note: `${s.dues.count} member(s)`,
+      note: plural(s.dues.count, "student"),
     },
     {
       label: "Cabins available",
@@ -45,35 +48,41 @@ export default function AdminHome() {
       note: `of ${s.cabins.total}`,
     },
     {
-      label: "Active memberships",
+      label: "Current bookings",
       value: `${s.activeMemberships}`,
-      note: `${s.activeMembers} active members`,
+      note: plural(s.activeMembers, "active student"),
     },
-    { label: "Ending within 7 days", value: `${s.expiring.length}` },
   ];
+  // Only show this card when something is about to end.
+  if (s.expiring.length > 0) {
+    stats.push({
+      label: "Ending within 7 days",
+      value: `${s.expiring.length}`,
+    });
+  }
 
   return (
     <div>
       <PageHeader title="Dashboard" />
 
       <div className="mt-4 flex flex-wrap gap-2">
-        <Link href="/admin/members" className={quick}>
-          Add member
-        </Link>
-        <Link href="/admin/memberships" className={quick}>
-          Assign cabin
-        </Link>
-        <Link href="/admin/payments" className={quick}>
-          Record payment
-        </Link>
         <Link href="/admin/admit" className={`${quick} bg-gold`}>
           New admission
+        </Link>
+        <Link href="/admin/payments" className={quick}>
+          Fee received
+        </Link>
+        <Link href="/admin/memberships" className={quick}>
+          Cabin bookings
         </Link>
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3">
         {stats.map((x) => (
-          <Card key={x.label}>
+          <Card
+            key={x.label}
+            className="last:odd:col-span-2 md:last:odd:col-span-1"
+          >
             <p className="font-display text-2xl font-extrabold text-navy md:text-3xl">
               {x.value}
             </p>

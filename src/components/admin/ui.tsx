@@ -118,3 +118,34 @@ export async function attempt<T>(
     return undefined;
   }
 }
+export function SkeletonRows({ rows = 3 }: { rows?: number }) {
+  return (
+    <>
+      {Array.from({ length: rows }, (_, i) => (
+        <li
+          key={i}
+          aria-hidden
+          className="h-20 animate-pulse rounded-2xl bg-navy/10"
+        />
+      ))}
+    </>
+  );
+}
+
+export function EmptyState({
+  title,
+  text,
+  action,
+}: {
+  title: string;
+  text?: string;
+  action?: ReactNode;
+}) {
+  return (
+    <Card className="border-dashed py-8 text-center">
+      <p className="font-display text-lg font-extrabold text-navy">{title}</p>
+      {text && <p className="mt-1 text-navy/70">{text}</p>}
+      {action && <div className="mt-4">{action}</div>}
+    </Card>
+  );
+}

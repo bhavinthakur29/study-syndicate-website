@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import { cn } from "@/lib/utils";
+import { ToastProvider } from "@/components/admin/toast";
 
 // Add a line here whenever a new admin page is built.
 const nav = [
@@ -327,7 +328,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </AuthFrame>
       </Unauthenticated>
       <Authenticated>
-        <Authorized>{children}</Authorized>
+        <ToastProvider>
+          <Authorized>{children}</Authorized>
+        </ToastProvider>
       </Authenticated>
     </div>
   );

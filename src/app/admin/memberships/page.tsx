@@ -1,12 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Field, PageHeader, attempt, input } from "@/components/admin/ui";
+import {
+  EmptyState,
+  Field,
+  SkeletonRows,
+  PageHeader,
+  attempt,
+  input,
+} from "@/components/admin/ui";
 import type { Result } from "../../../../convex/lib/result";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { PLANS, type PlanKey } from "../../../../convex/lib/plans";
+import { useConfirm } from "@/components/admin/confirm";
+import { useToast } from "@/components/admin/toast";
 import {
   DAY,
   addMonthsIST,
@@ -45,11 +54,12 @@ function newForm(): Form {
 }
 
 export default function MembershipsPage() {
+  const toast = useToast();
+  const { confirm, dialog } = useConfirm();
   const [form, setForm] = useState<Form | null>(null);
   const [ext, setExt] = useState<Ext | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [notice, setNotice] = useState("");
 
   const members = useQuery(api.members.list, { status: "active" });
   const active = useQuery(api.memberships.listActive);
@@ -66,6 +76,19 @@ export default function MembershipsPage() {
   const occupied = cabins?.filter((c) => c.status === "occupied").length ?? 0;
   const expiring =
     active?.filter((m) => m.endDate - now <= 7 * DAY).length ?? 0;
+
+  const stats: [string, number | undefined][] = [
+    ["Cabins", cabins?.length],
+    ["Occupied", occupied],
+    ["Available", freeCabins?.length],
+  ];
+  // Only show this card when something is about to end (or while loading).
+  if (active === undefined || expiring > 0) {
+    stats.push([
+      "Ending within 7 days",
+      active === undefined ? undefined : expiring,
+    ]);
+  }
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) =>
     setForm((f) => (f ? { ...f, [k]: v } : f));
@@ -109,7 +132,10 @@ export default function MembershipsPage() {
           startDate: startOfDayIST(form.start),
           endDate: endOfDayIST(form.end),
         }),
-      () => setForm(null),
+      () => {
+        setForm(null);
+        toast("Cabin booked.");
+      },
     );
   }
 
@@ -122,6 +148,7 @@ export default function MembershipsPage() {
 
   return (
     <div>
+      {dialog}
       <PageHeader
         title="Cabin bookings"
         intro="Who is sitting in which cabin, and until when. Use Renew when a student pays for more time, and End booking when they leave."
@@ -138,15 +165,10 @@ export default function MembershipsPage() {
         }
       />
 
-      <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-        {[
-          ["Cabins", cabins?.length],
-          ["Occupied", occupied],
-          ["Available", freeCabins?.length],
-          ["Ending within 7 days", expiring],
-        ].map(([label, value]) => (
+      <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fit,minmax(10rem,1fr))]">
+        {stats.map(([label, value]) => (
           <div
-            key={label as string}
+            key={label}
             className="rounded-2xl border border-navy/10 bg-white p-4"
           >
             <p className="font-display text-3xl font-extrabold text-navy">
@@ -160,10 +182,13 @@ export default function MembershipsPage() {
       {form && (
         <div className="mt-6 rounded-2xl border-2 border-gold bg-white p-5 md:p-6">
           <h2 className="font-display text-xl font-extrabold text-navy">
-            Assign a cabin
+            Book a cabin
           </h2>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <Field label="Member (active, without a membership)">
+            <Field
+              label="Student"
+              hint="Only students without a current cabin booking are shown."
+            >
               <select
                 className={input}
                 value={form.memberId}
@@ -177,7 +202,7 @@ export default function MembershipsPage() {
                 ))}
               </select>
             </Field>
-            <Field label="Cabin (available)">
+            <Field label="Cabin" hint="Only free cabins are shown.">
               <select
                 className={input}
                 value={form.cabin}
@@ -213,7 +238,7 @@ export default function MembershipsPage() {
                 ))}
               </select>
             </Field>
-            <Field label="Amount due (₹)">
+            <Field label="Total fee for this period (₹)">
               <input
                 className={input}
                 inputMode="numeric"
@@ -231,7 +256,7 @@ export default function MembershipsPage() {
                 onChange={(e) => changeStart(e.target.value)}
               />
             </Field>
-            <Field label="End date">
+            <Field label="Paid up to">
               <input
                 className={input}
                 type="date"
@@ -241,7 +266,7 @@ export default function MembershipsPage() {
             </Field>
           </div>
           {error && (
-            <p role="alert" className="mt-4 font-semibold text-cabin">
+            <p role="alert" className="font-semibold text-cabin">
               {error}
             </p>
           )}
@@ -251,7 +276,7 @@ export default function MembershipsPage() {
               disabled={busy}
               className="rounded-xl bg-navy px-5 py-3 font-bold text-white disabled:opacity-60"
             >
-              {busy ? "Saving…" : "Save"}
+              {busy ? "Booking…" : "Book cabin"}
             </button>
             <button
               onClick={() => {
@@ -266,19 +291,24 @@ export default function MembershipsPage() {
         </div>
       )}
 
-      {!form && error && (
+      {!form && !ext && error && (
         <p role="alert" className="mt-4 font-semibold text-cabin">
           {error}
         </p>
       )}
 
       <h2 className="mt-10 font-display text-xl font-extrabold text-navy">
-        Active memberships
+        Current bookings
       </h2>
       <ul className="mt-4 space-y-3">
-        {active === undefined && <li className="text-navy/70">Loading…</li>}
+        {active === undefined && <SkeletonRows />}
         {active?.length === 0 && (
-          <li className="text-navy/70">No active memberships yet.</li>
+          <li>
+            <EmptyState
+              title="No cabin bookings yet"
+              text="Use New admission to add your first student."
+            />
+          </li>
         )}
         {active?.map((m) => {
           const d = days(m.endDate);
@@ -304,7 +334,6 @@ export default function MembershipsPage() {
                   <button
                     onClick={() => {
                       setError("");
-                      setNotice("");
                       setExt({
                         id: m._id,
                         months: "1",
@@ -313,15 +342,27 @@ export default function MembershipsPage() {
                         method: "cash",
                       });
                     }}
+                    className="rounded-lg border border-navy/20 px-4 py-2 text-sm font-semibold text-navy"
                   >
                     Renew
                   </button>
                   <button
-                    onClick={() =>
-                      window.confirm(
-                        `End ${m.memberName}'s membership and free cabin ${m.cabinNumber}?`,
-                      ) && run(() => cancel({ id: m._id }))
-                    }
+                    onClick={async () => {
+                      const ok = await confirm({
+                        title: "End this booking?",
+                        message: `${m.memberName} will leave Cabin ${m.cabinNumber}. The cabin becomes free straight away.`,
+                        confirmLabel: "End booking",
+                      });
+                      if (ok) {
+                        run(
+                          () => cancel({ id: m._id }),
+                          () =>
+                            toast(
+                              `${m.memberName}'s booking has ended. Cabin ${m.cabinNumber} is free.`,
+                            ),
+                        );
+                      }
+                    }}
                     className="rounded-lg border border-navy/20 px-4 py-2 text-sm font-semibold text-navy"
                   >
                     End booking
@@ -414,7 +455,7 @@ export default function MembershipsPage() {
                               method: ext.method,
                             }),
                           (d) => {
-                            setNotice(
+                            toast(
                               `${d.memberName} renewed until ${formatDate(d.endDate)}.${d.receiptNo ? ` Receipt ${d.receiptNo}.` : " No fee recorded."}${d.balance > 0 ? ` ₹${d.balance} still due.` : ""}`,
                             );
                             setExt(null);
