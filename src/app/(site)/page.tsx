@@ -5,6 +5,8 @@ import { Plans } from "@/components/sections/plans";
 import { FindUs } from "@/components/sections/find-us";
 import { Faq } from "@/components/sections/faq";
 
+export const revalidate = 1800;
+
 export default function Home() {
   return (
     <>

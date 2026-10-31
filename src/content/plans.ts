@@ -1,6 +1,5 @@
 export const cabins = {
   total: 72,
-  booked: 12,
 } as const;
 
 export const planIncludes = [
