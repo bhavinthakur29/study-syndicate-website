@@ -9,3 +9,15 @@ export const list = query({
     return rows.map((c) => ({ number: c.number, status: c.status }));
   },
 });
+
+// Public on purpose: returns two numbers only, nothing personal.
+export const publicCounts = query({
+  args: {},
+  handler: async (ctx) => {
+    const cabins = await ctx.db.query("cabins").take(200);
+    return {
+      total: cabins.length,
+      available: cabins.filter((c) => c.status === "available").length,
+    };
+  },
+});

@@ -7,7 +7,7 @@ import {
 } from "./_generated/server";
 import { requireAdmin } from "./lib/auth";
 import { logAudit } from "./lib/audit";
-import { DAY, addMonthsIST } from "./lib/dates";
+import { DAY } from "./lib/dates";
 import { paidFor } from "./lib/payments";
 import { safe } from "./lib/result";
 
@@ -109,36 +109,75 @@ export const assign = mutation({
     }),
 });
 
-export const extend = mutation({
-  args: { id: v.id("memberships"), months: v.number(), amount: v.number() },
-  handler: async (ctx, { id, months, amount }) =>
+export const edit = mutation({
+  args: {
+    id: v.id("memberships"),
+    cabinNumber: v.number(),
+    plan: v.union(v.literal("offer"), v.literal("monthly")),
+    amountDue: v.number(),
+    startDate: v.number(),
+    endDate: v.number(),
+  },
+  handler: (ctx, a) =>
     safe(async () => {
       const admin = await requireAdmin(ctx);
-      if (!Number.isInteger(months) || months < 1 || months > 12) {
-        throw new ConvexError("Months must be between 1 and 12");
-      }
-      checkAmount(amount);
+      checkAmount(a.amountDue);
+      checkDates(a.startDate, a.endDate);
 
-      const m = await ctx.db.get(id);
+      const m = await ctx.db.get(a.id);
       if (!m || m.status !== "active")
-        throw new ConvexError("Only an active membership can be extended");
+        throw new ConvexError("Only a current booking can be edited");
 
-      const endDate = addMonthsIST(m.endDate, months);
-      if (endDate < Date.now()) {
+      const paid = await paidFor(ctx, a.id, m.memberId);
+      if (a.amountDue < paid) {
         throw new ConvexError(
-          "That would still end in the past. End this membership and create a new one.",
+          `The fee can't be less than what has already been received (₹${paid.toLocaleString("en-IN")})`,
         );
       }
 
-      await ctx.db.patch(id, { endDate, amountDue: m.amountDue + amount });
+      // Everything is checked before anything is written.
+      const moving = a.cabinNumber !== m.cabinNumber;
+      const newCabin = moving
+        ? await ctx.db
+            .query("cabins")
+            .withIndex("by_number", (q) => q.eq("number", a.cabinNumber))
+            .unique()
+        : null;
+      if (moving) {
+        if (!newCabin) throw new ConvexError("Cabin not found");
+        if (newCabin.status !== "available")
+          throw new ConvexError(`Cabin ${a.cabinNumber} is not available`);
+      }
+
+      const changed = [
+        moving && "cabin",
+        a.plan !== m.plan && "plan",
+        a.amountDue !== m.amountDue && "fee",
+        a.startDate !== m.startDate && "start date",
+        a.endDate !== m.endDate && "end date",
+      ].filter(Boolean);
+      if (changed.length === 0) return;
+
+      await ctx.db.patch(a.id, {
+        cabinNumber: a.cabinNumber,
+        plan: a.plan,
+        amountDue: a.amountDue,
+        startDate: a.startDate,
+        endDate: a.endDate,
+      });
+      if (newCabin) {
+        await freeCabin(ctx, m.cabinNumber);
+        await ctx.db.patch(newCabin._id, { status: "occupied" });
+      }
+
       const member = await ctx.db.get(m.memberId);
       await logAudit(
         ctx,
         admin.email,
-        "extend",
+        "update",
         "memberships",
-        id,
-        `Extended ${member?.name ?? "member"} (cabin ${m.cabinNumber}) by ${months} month(s)`,
+        a.id,
+        `Edited booking of ${member?.name ?? "member"}: ${changed.join(", ")}`,
       );
     }),
 });
